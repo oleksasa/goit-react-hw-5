@@ -1,31 +1,22 @@
-import React, { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useRef, useState } from "react";
 import MovieCard from "../../components/MovieCard/MovieCard";
-import MovieCast from "../../components/MovieCast/MovieCast";
-import MovieReviews from "../../components/MovieReviews/MovieReviews";
-import {
-  getMovieCredits,
-  getMovieDetails,
-  getMovieReviews,
-} from "../../Services/api";
-import { Route, Routes, useLocation, useParams } from "react-router-dom";
+import { getMovieDetails } from "../../Services/api";
+import { Link, Outlet, Route, useLocation, useParams } from "react-router-dom";
 import ErrorMessage from "../../components/ErrorMessage/ErrorMessage";
-import Loader from "../../Loader/Loader";
-import { NotFound } from "../../NotFound/NotFound";
+import Loader from "../../components/Loader/Loader";
+import { NotFound } from "../../components/NotFound/NotFound";
 import * as S from "./MovieDetailsPage.style";
 
 const MovieDetailsPage = () => {
   const [data, setData] = useState(null);
-  const [cast, setCast] = useState(null);
-  const [reviews, setReviews] = useState(null);
   const { movieId } = useParams();
-  const { pathname } = useLocation();
   const [errorMessage, setErrorMessage] = useState("");
   const [statusCode, setStatusCode] = useState(null);
-  const [errorMessageCast, setErrorMessageCast] = useState("");
-  const [errorMessageReviews, setErrorMessageReviews] = useState("");
+
   const [loading, setLoading] = useState(false);
-  const [castLoading, setCastLoading] = useState(false);
-  const [reviewsLoading, setReviewsLoading] = useState(false);
+
+  const location = useLocation();
+  const Ref = useRef(location.state ?? "/");
 
   const getMovieDetailsAsync = async () => {
     setLoading(true);
@@ -40,40 +31,13 @@ const MovieDetailsPage = () => {
     }
   };
 
-  const getMovieCastAsync = async () => {
-    setCastLoading(true);
-    try {
-      const { cast } = await getMovieCredits(movieId);
-      setCast(cast);
-    } catch (e) {
-      setErrorMessageCast(e);
-    } finally {
-      setCastLoading(false);
-    }
-  };
-
-  const getMovieReviewsAsync = async () => {
-    setReviewsLoading(true);
-    try {
-      const reviews = await getMovieReviews(movieId);
-      setReviews(reviews.results[0].content);
-    } catch (e) {
-      setErrorMessageReviews(e.message);
-    } finally {
-      setReviewsLoading(false);
-    }
-  };
   useEffect(() => {
     getMovieDetailsAsync();
-  }, []);
-
-  useEffect(() => {
-    if (pathname === `/movies/${movieId}/cast`) getMovieCastAsync();
-    if (pathname === `/movies/${movieId}/reviews`) getMovieReviewsAsync();
-  }, [pathname]);
+  }, [movieId]);
 
   return (
     <>
+      <S.GoBack to={Ref.current}>Back</S.GoBack>
       {errorMessage && statusCode !== 404 && (
         <ErrorMessage message={errorMessage} />
       )}
@@ -91,39 +55,19 @@ const MovieDetailsPage = () => {
           />
         )
       )}
-      <S.StyledLinkCast to={`/movies/${movieId}/cast`}>Cast</S.StyledLinkCast>
-      <S.StyledLinkReviews to={`/movies/${movieId}/reviews`}>
-        Reviews
-      </S.StyledLinkReviews>
-      <Suspense fallback={<div>Loading...</div>}>
-        <Routes>
-          <Route
-            path="/cast"
-            element={
-              castLoading ? (
-                <Loader />
-              ) : (
-                <MovieCast cast={cast} errorMessage={errorMessageCast} />
-              )
-            }
-          />
-          <Route
-            path="/reviews"
-            element={
-              reviewsLoading ? (
-                <Loader />
-              ) : reviews && reviews.length > 0 ? (
-                <MovieReviews
-                  reviews={reviews}
-                  errorMessage={errorMessageReviews}
-                />
-              ) : (
-                <p>We don't have any reviews for this movie</p>
-              )
-            }
-          />
-        </Routes>
-      </Suspense>
+      <>
+        <S.List>
+          <li>
+            <S.StyledLinkCast to="cast">Cast</S.StyledLinkCast>
+          </li>
+          <li>
+            <S.StyledLinkReviews to="reviews">Reviews</S.StyledLinkReviews>
+          </li>
+        </S.List>
+        <Suspense fallback={<Loader />}>
+          <Outlet />
+        </Suspense>
+      </>
     </>
   );
 };

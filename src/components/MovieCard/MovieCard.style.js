@@ -3,7 +3,8 @@ import styled from "styled-components";
 export const Container = styled.div`
   background-color: grey;
   padding: 10px;
-  width: fit-content;
+  width: 1300px;
+  margin: 0 auto;
   border: 3px solid black;
 `;
 

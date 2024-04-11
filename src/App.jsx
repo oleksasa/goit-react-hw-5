@@ -2,9 +2,7 @@ import React, { Suspense } from "react";
 import { lazy } from "react";
 import { Route, Routes } from "react-router-dom";
 import Navigation from "./components/Navigation/Navigation";
-import MovieCast from "./components/MovieCast/MovieCast";
-import MovieReviews from "./components/MovieReviews/MovieReviews";
-import { GlobalCSS } from "./Stylles/global";
+import { GlobalCSS } from "./styles/global";
 
 const Home = lazy(() => import("./pages/HomePage/HomePage"));
 
@@ -15,6 +13,12 @@ const MoviesPage = lazy(() => import("./pages/MoviesPage/MoviesPage"));
 
 const NotFound = lazy(() => import("./pages/NotFoundPage/NotFoundPage"));
 
+const MovieCast = lazy(() => import("./components/MovieCast/MovieCast"));
+
+const MovieReviews = lazy(() =>
+  import("./components/MovieReviews/MovieReviews")
+);
+
 function App() {
   return (
     <>
@@ -24,7 +28,10 @@ function App() {
           <Routes>
             <Route index element={<Home />} />
             <Route path="/movies" element={<MoviesPage />} />
-            <Route path="/movies/:movieId/*" element={<MovieDetails />} />
+            <Route path="/movies/:movieId" element={<MovieDetails />}>
+              <Route path="cast" element={<MovieCast />} />
+              <Route path="reviews" element={<MovieReviews />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

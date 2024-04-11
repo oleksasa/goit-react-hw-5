@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from "react";
 import SearchBar from "../../components/SearchBar/SearchBar";
-import TrendingMovies from "../../components/MoviesList/MoviesList";
+import MovieList from "../../components/MovieList/MovieList";
 import { getSearchMovie } from "../../Services/api";
-import Loader from "../../Loader/Loader";
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
+import { useSearchParams } from "react-router-dom";
 
 const MoviesPage = () => {
   const [movies, setMovies] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState();
-  const [value, setValue] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
 
   async function getSearchMovieAsync(value) {
     try {
@@ -21,9 +21,9 @@ const MoviesPage = () => {
       });
       setMovies(results);
       if (results.length === 0)
-        iziToast.error({
-          title: "Error",
-          message: "Введи існуючий фільм",
+        iziToast.show({
+          color: "red",
+          message: "Unfortunately, we did not find a film for your request",
           position: "topRight",
         });
     } catch (e) {
@@ -34,10 +34,11 @@ const MoviesPage = () => {
   }
 
   useEffect(() => {
-    if (value.trim() !== "") {
-      getSearchMovieAsync(value);
+    const query = searchParams.get("query") ?? "";
+    if (query.trim() !== "") {
+      getSearchMovieAsync(query);
     }
-  }, [value]);
+  }, [searchParams]);
 
   const handleSubmit = (value) => {
     if (value === "") {
@@ -48,14 +49,20 @@ const MoviesPage = () => {
       });
       return;
     }
+    setSearchParams({
+      query: value,
+    });
     setMovies([]);
-    setValue(value);
   };
 
   return (
     <>
-      {loading ? <Loader /> : <SearchBar onSubmit={handleSubmit} />}
-      <TrendingMovies list={movies} errorMessage={errorMessage} />
+      <SearchBar onSubmit={handleSubmit} query={searchParams.get("query")} />
+      <MovieList
+        list={movies}
+        errorMessage={errorMessage}
+        isLoading={loading}
+      />
     </>
   );
 };
