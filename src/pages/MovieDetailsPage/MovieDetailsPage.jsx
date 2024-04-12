@@ -16,7 +16,7 @@ const MovieDetailsPage = () => {
   const [loading, setLoading] = useState(false);
 
   const location = useLocation();
-  const Ref = useRef(location.state ?? "/");
+  const ref = useRef(location.state ?? "/");
 
   const getMovieDetailsAsync = async () => {
     setLoading(true);
@@ -37,7 +37,7 @@ const MovieDetailsPage = () => {
 
   return (
     <>
-      <S.GoBack to={Ref.current}>Back</S.GoBack>
+      <S.GoBack to={ref.current}>Back</S.GoBack>
       {errorMessage && statusCode !== 404 && (
         <ErrorMessage message={errorMessage} />
       )}
